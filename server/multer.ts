@@ -1,6 +1,6 @@
 import multer from 'multer'
 
-const ROOT_DIR = process.env.ROOT_DIR || "../bubu/";
+export const ROOT_DIR = process.env.ROOT_DIR || "../bubu/";
 
 const storage = multer.diskStorage({
     destination: ROOT_DIR,

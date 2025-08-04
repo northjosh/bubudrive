@@ -1,0 +1,28 @@
+{
+  "name": "bubudrive-server",
+  "type": "commonjs",
+  "private": true,
+  "scripts": {
+    "dev": "ts-node server.ts",
+    "build": "tsc -b ",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "@trpc/server": "^11.4.3",
+    "@types/cors": "^2.8.19",
+    "@types/lodash": "^4.17.20",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "lowdb": "^7.0.1",
+    "multer": "^2.0.2",
+    "uuid": "^11.1.0",
+    "zod": "^4.0.14"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^24.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}

@@ -1,19 +1,19 @@
-import { JSONFile } from 'lowdb/node';
-import {Low } from 'lowdb'
-
+import { JSONFile } from "lowdb/node";
+import { Low } from "lowdb";
 
 export interface File {
- id: string;
+  id: string;
   name: string;
   size: number;
-  owner: string
-  folder : Folder;
+  owner: string;
+  folder: Folder;
   lastModified: number;
 }
 
 export interface Folder {
+  id: string;
   name: string;
-  owner: boolean;
+  owner: string;
   path: string;
 }
 
@@ -28,15 +28,11 @@ export interface SharedFolder {
   sharedWith: string[];
 }
 
-const defaultData =  {
+export const defaultData = {
   folders: [] as Folder[],
   users: [] as User[],
   sharedFolders: [] as SharedFolder[],
   files: [] as File[],
-}
+};
 
- export const db = new Low<typeof defaultData>(new JSONFile("db.json"), defaultData);
-
-
-
- 
+export type Database = typeof defaultData;
