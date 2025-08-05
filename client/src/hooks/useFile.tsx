@@ -5,7 +5,6 @@ export const useUploadFile = () => {
     return useMutation({
         mutationFn: async ({ foldername, files }: { foldername: string, files: File[] }) => {
             const formData = new FormData();
-            formData.append("foldername", foldername);
             for (const file of files) {
                 formData.append("files", file);
             }

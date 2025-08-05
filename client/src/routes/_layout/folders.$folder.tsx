@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { trpc } from "../../trpc";
 import { FolderView } from "../../components/FolderView";
 
-
 export const Route = createFileRoute("/_layout/folders/$folder")({
   component: RouteComponent,
 });

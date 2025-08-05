@@ -10,5 +10,7 @@ export default defineConfig({
     }),
     preact(),
   ],
-  
+  build: {
+    outDir: "dist"
+  }
 });
