@@ -1,9 +1,14 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import * as trpcExpress from "@trpc/server/adapters/express";
-import { File, Folder, db } from "./db";
+import { File, Folder } from "./lib/db";
+import { logger } from "./utils/logger";
+
 import { v4 } from "uuid";
 import { z } from "zod/v4";
-import { verifyJwt, fetchUserFromToken, signup, login } from "./auth";
+import { verifyJwt, fetchUserFromToken, signup, login } from "./lib/auth";
+import { db } from "./server";
+import { createFolder, deleteFolder, getAllFolders, getFolder } from "./lib/folder";
+import { getAllFiles, getFilesFromFolder } from "./lib/file";
 
 export const createContext = async ({
   req,
@@ -27,7 +32,16 @@ type Context = Awaited<ReturnType<typeof createContext>>;
 const t = initTRPC.context<Context>().create();
 
 export const router = t.router;
-export const procedure = t.procedure;
+
+export const loggerMiddleware = t.middleware(
+  async ({ path, type, next, ctx }) => {
+    const userId = ctx.user?.id ?? "anonymous";
+    logger.info(`${Date.now()} ${type} ${path} - User: ${userId}`);
+    return next();
+  }
+);
+
+export const procedure = t.procedure.use(loggerMiddleware);
 
 export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
   if (!ctx.user) {
@@ -41,53 +55,8 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
   });
 });
 
-export const createFolder = async (name: string, ownerId: string) => {
-  const folder: Folder = {
-    id: v4(),
-    name: name,
-    owner: ownerId,
-    path: name,
-  };
 
-  db.data.folders.push(folder);
-  await db.write();
-  return folder;
-};
 
-export const deleteFolder = (foldername: string, ownerId: string) => {
-  const folder = db.data.folders.find(
-    (f: Folder) => f.name === foldername && f.owner === ownerId
-  );
-  if (!folder) {
-    throw new TRPCError({ code: "NOT_FOUND", message: "Folder not found" });
-  }
-  db.data.files = db.data.files.filter((f: File) => f.folder !== folder);
-  db.data.folders = db.data.folders.filter((f: Folder) => f.id !== folder.id);
-  db.write();
-};
-
-export const getFolder = ({ foldername }: { foldername: string }) => {
-  const folder = db.data.folders.find((f: Folder) => f.name == foldername);
-  return folder;
-};
-
-export const getAllFolders = (ownerId: string) => {
-  return db.data.folders.filter((f) => f.owner === ownerId);
-};
-
-export const getAllFiles = (ownerId: string) => {
-  return db.data.files.filter((f) => f.owner == ownerId);
-};
-
-export const getFilesFromFolder = (foldername: string, ownerId: string) => {
-  const folder = db.data.folders.find(
-    (f: Folder) => f.name == foldername && f.owner === ownerId
-  );
-  if (!folder) {
-    throw new TRPCError({ code: "NOT_FOUND", message: "Folder not found" });
-  }
-  return db.data.files.filter((f: File) => f.folder.id === folder.id);
-};
 
 export const appRouter = router({
   hello: procedure.query((opts) => "ola trpC!"),
@@ -119,9 +88,6 @@ export const appRouter = router({
     )
     .mutation(async ({ input }) => {
       const result = await login(input);
-      if (typeof result === "string") {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: result });
-      }
       if (!result) {
         throw new TRPCError({
           code: "UNAUTHORIZED",

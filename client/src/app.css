@@ -2,10 +2,9 @@
 
 /* Global styles */
 * {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   text-transform: lowercase;
 }
-
 
 .login {
   display: flex;
@@ -212,8 +211,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* File Dialog Styles */
@@ -305,7 +308,6 @@
   align-items: center;
   gap: 4px;
   color: red;
-
 }
 
 .side-item-title {
@@ -558,6 +560,24 @@ label {
 .text-input:focus {
   border-color: #dc2626;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+.signup-container {
+  display: grid;
+  height: 100vh;
+  place-items: center;
+  gap: 16px;
+}
+
+.signup-container > form {
+  display: flex;
+  flex-direction: column;
+  min-width: 30%;
+  gap: 1rem;
+  padding: 0.2rem;
+}
+.signup-container > form > input {
+  color: white;
+  font-size: medium;
 }
 
 .submit-button {

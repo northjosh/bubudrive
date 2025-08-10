@@ -1,7 +1,9 @@
 import * as jose from "jose";
-import { User, db } from "./db";
+import { User } from "./db";
 import { v4 } from "uuid";
+import "dotenv/config";
 import bcrypt from "bcryptjs";
+import { db } from "../server";
 
 const jwtSecret = new TextEncoder().encode(process.env.JWT_SECRET);
 

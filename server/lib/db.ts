@@ -18,7 +18,7 @@ export interface Folder {
 }
 
 export interface User {
-  name: string;
+  id:string
   username: string;
   password: string;
 }
@@ -36,3 +36,4 @@ export const defaultData = {
 };
 
 export type Database = typeof defaultData;
+

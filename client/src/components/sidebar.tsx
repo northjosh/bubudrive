@@ -4,7 +4,7 @@ import { Dialog } from "./dialog";
 import { useSignal } from "@preact/signals";
 import { trpc } from "../trpc";
 import { queryClient } from "../main";
-import type { Folder } from "../../../server/db";
+import type { Folder } from "../../../server/lib/db";
 import { useUploadFile } from "../hooks/useFile";
 import { formatFileSize } from "../utils/fileSize";
 

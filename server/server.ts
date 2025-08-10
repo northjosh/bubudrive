@@ -1,41 +1,16 @@
 import express, { Request, Response } from "express";
 import { appRouter, createContext } from "./trpc";
 import * as trpcExpress from "@trpc/server/adapters/express";
-import { ROOT_DIR, upload } from "./multer";
-// import { db, File, Folder } from "./db";
+import { ROOT_DIR, upload } from "./utils/multer";
+import { Database, File, Folder, SharedFolder, User } from "./lib/db";
 import { v4 } from "uuid";
 import path from "path";
+import "dotenv/config";
 import cors from "cors";
 
 import { JSONFile } from "lowdb/node";
 import { Low } from "lowdb";
-
-export interface File {
-  id: string;
-  name: string;
-  size: number;
-  owner: string;
-  folder: Folder;
-  lastModified: number;
-}
-
-export interface Folder {
-  id: string;
-  name: string;
-  owner: string;
-  path: string;
-}
-
-export interface User {
-  name: string;
-  username: string;
-  password: string;
-}
-
-export interface SharedFolder {
-  folderName: string;
-  sharedWith: string[];
-}
+import { logger } from "./utils/logger";
 
 export const defaultData = {
   folders: [] as Folder[],
@@ -44,14 +19,9 @@ export const defaultData = {
   files: [] as File[],
 };
 
-export type Database = typeof defaultData;
-
 export const db = new Low<Database>(new JSONFile("db.json"), defaultData);
 
-
 const app = express();
-
-
 
 app.use(
   cors({
@@ -65,6 +35,9 @@ app.use(
   trpcExpress.createExpressMiddleware({
     router: appRouter,
     createContext,
+    onError({ path, error }) {
+      logger.error(`trPC Failed on ${path ?? " "}: ${error.message}`);
+    },
   })
 );
 

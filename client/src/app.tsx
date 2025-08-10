@@ -1,12 +1,10 @@
-
 import { Fragment } from "preact";
-import "./app.css"
+import "./app.css";
 
-export function App() {
-
+export function Error() {
   return (
     <Fragment>
-        <p>Error</p>
+      <p>Error</p>
     </Fragment>
   );
 }

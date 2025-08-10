@@ -7,7 +7,7 @@ import {
 } from "@trpc/react-query";
 import type { AppRouter } from "../../server/trpc";
 
-const url = "http://localhost:3000/trpc";
+const url = "http://localhost:9000/trpc";
 
 export const trpc = createTRPCReact<AppRouter>();
 

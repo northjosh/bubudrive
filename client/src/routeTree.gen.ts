@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteRouteImport } from './routes/_layout/route'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutFoldersFolderRouteImport } from './routes/_layout/folders.$folder'
 
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -36,11 +42,13 @@ const LayoutFoldersFolderRoute = LayoutFoldersFolderRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/': typeof LayoutIndexRoute
   '/folders/$folder': typeof LayoutFoldersFolderRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/': typeof LayoutIndexRoute
   '/folders/$folder': typeof LayoutFoldersFolderRoute
 }
@@ -48,18 +56,20 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_layout': typeof LayoutRouteRouteWithChildren
   '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/_layout/': typeof LayoutIndexRoute
   '/_layout/folders/$folder': typeof LayoutFoldersFolderRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/login' | '/' | '/folders/$folder'
+  fullPaths: '/login' | '/signup' | '/' | '/folders/$folder'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/' | '/folders/$folder'
+  to: '/login' | '/signup' | '/' | '/folders/$folder'
   id:
     | '__root__'
     | '/_layout'
     | '/login'
+    | '/signup'
     | '/_layout/'
     | '/_layout/folders/$folder'
   fileRoutesById: FileRoutesById
@@ -67,10 +77,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   LayoutRouteRoute: typeof LayoutRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
+  SignupRoute: typeof SignupRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -119,6 +137,7 @@ const LayoutRouteRouteWithChildren = LayoutRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   LayoutRouteRoute: LayoutRouteRouteWithChildren,
   LoginRoute: LoginRoute,
+  SignupRoute: SignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

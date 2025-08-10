@@ -1,4 +1,4 @@
-import type { File } from "../../../server/db";
+import type { File } from "../../../server/lib/db";
 import { formatFileSize } from "../utils/fileSize";
 
 export function FolderView({

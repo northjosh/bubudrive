@@ -6,13 +6,11 @@
   "author": "Joshua Mensah<github.com/northjosh>",
   "license": "ISC",
   "scripts": {
-    "dev": "vite",
-    "dev:server": "cd server && pnpm run dev",
-    "build:client": "tsc -b && vite build",
+ "dev": "cd server && pnpm run dev",
+    "build:client": "cd client && tsc -b && vite build",
     "build:server": "cd server && pnpm run build",
     "build": "pnpm run build:client && pnpm run build:server",
-    "start:server": "cd server && pnpm start",
-    "start:client": "node dist/client/index.js",
-    "preview:client": "vite preview"
+    "start": "cd server && pnpm start",
+    "preview": "cd client && vite preview"
   }
 }
