@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "../hooks/useAuth";
 import { useSignal } from "@preact/signals";
 
@@ -30,10 +30,12 @@ function RouteComponent() {
   return (
     <div class="signup-container">
       <form onSubmit={handleSignup}>
+      <h2 className="">create an account</h2>
         <input
           type="text"
           name="username"
           id="username"
+          placeholder="username"
           onChange={(e) => {
             username.value = e.currentTarget.value;
           }}
@@ -42,11 +44,15 @@ function RouteComponent() {
           type="text"
           name="password"
           id="password"
+          placeholder="password"
           onChange={(e) => {
             password.value = e.currentTarget.value;
           }}
         />
         <button type="submit">signup</button>
+        <span style={{ display: "flex", gap: 6 }}>
+          already have an account? <Link to="/login">log in</Link>
+        </span>
       </form>
     </div>
   );

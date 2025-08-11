@@ -57,7 +57,6 @@ function RouteComponent() {
         {error && (
           <div>{error}</div>
         )}
-        <div>
           <button
             type="submit"
             disabled={isLoading}
@@ -65,7 +64,6 @@ function RouteComponent() {
           >
             log in
           </button>
-        </div>
         <span style={{ display: "flex", gap: 6 }}>
           Don't have an account? <Link to="/signup">Sign up</Link>
         </span>
