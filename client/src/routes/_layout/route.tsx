@@ -4,9 +4,22 @@ import { FolderIcon, LogOut } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useAuth } from "../../hooks/useAuth";
 import "../../app.css";
+import { isTokenExpired } from "../../utils/tokenUtils";
 
 export const Route = createFileRoute("/_layout")({
-  beforeLoad: ({ context }) => {},
+  beforeLoad: () => {
+    const authToken = localStorage.getItem("authToken");
+    if (!authToken) {
+      throw redirect({ to: "/login" });
+    }
+
+    if(isTokenExpired(authToken)){
+      throw redirect({ to: "/login" });
+    }
+
+
+
+  },
   component: RouteComponent,
 });
 
@@ -32,9 +45,7 @@ function RouteComponent() {
 
         <div class="profile">
           <div>{user.username}!</div>
-          <button
-            onClick={logout}
-          >
+          <button onClick={logout}>
             <LogOut size={12} />
             Logout
           </button>

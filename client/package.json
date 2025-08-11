@@ -16,6 +16,7 @@
     "@tanstack/router-plugin": "^1.130.12",
     "@trpc/client": "^11.4.3",
     "@trpc/react-query": "^11.4.3",
+    "jwt-decode": "^4.0.0",
     "lucide-react": "^0.536.0",
     "preact": "^10.26.9",
     "zod": "^4.0.14"
