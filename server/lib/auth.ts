@@ -1,10 +1,17 @@
 import * as jose from "jose";
-import { User } from "./db";
 import { v4 } from "uuid";
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { db } from "../server";
 import { NextFunction, Request, Response } from "express";
+
+
+export interface User {
+  id:string
+  username: string;
+  password: string;
+}
+
 
 const jwtSecret = new TextEncoder().encode(process.env.JWT_SECRET);
 
@@ -91,6 +98,7 @@ export async function authenticate(req: Request, res:Response,  next: NextFuncti
     res.sendStatus(401).json({
       message: "Unauthorized"
     })
+    return 
   }
   try {
     const decoded = await verifyJwt(token!)

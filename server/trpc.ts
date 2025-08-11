@@ -1,12 +1,8 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import * as trpcExpress from "@trpc/server/adapters/express";
-import { File, Folder } from "./lib/db";
 import { logger } from "./utils/logger";
-
-import { v4 } from "uuid";
 import { z } from "zod/v4";
-import { verifyJwt, fetchUserFromToken, signup, login } from "./lib/auth";
-import { db } from "./server";
+import { fetchUserFromToken, signup, login } from "./lib/auth";
 import { createFolder, deleteFolder, getAllFolders, getFolder } from "./lib/folder";
 import { getAllFiles, getFilesFromFolder } from "./lib/file";
 

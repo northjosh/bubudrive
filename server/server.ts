@@ -3,7 +3,7 @@ import express, { Request, Response } from "express";
 import { appRouter, createContext } from "./trpc";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { ROOT_DIR, upload } from "./utils/multer";
-import { Database, File, Folder, SharedFolder, User } from "./lib/db";
+import { Database } from "./lib/db";
 import { v4 } from "uuid";
 import path from "path";
 import "dotenv/config";
@@ -12,13 +12,14 @@ import cors from "cors";
 import { JSONFile } from "lowdb/node";
 import { Low } from "lowdb";
 import { logger } from "./utils/logger";
-import { authenticate } from "./lib/auth";
-import { getFolderFromRequest } from "./lib/folder";
+import { authenticate, User } from "./lib/auth";
+import { Folder, getFolderFromRequest, } from "./lib/folder";
+import { canAccess, File } from "./lib/file";
+
 
 export const defaultData = {
   folders: [] as Folder[],
   users: [] as User[],
-  sharedFolders: [] as SharedFolder[],
   files: [] as File[],
 };
 
@@ -53,12 +54,15 @@ app.post("/files", authenticate, upload.array("files"), async (req, res) => {
   const response = [];
 
   for (const file of files) {
+
     const newFile: File = {
+      type: 'file',
       name: file.originalname,
       id: v4(),
       size: file.size,
       owner: user!.id,
-      folder: folder!,
+      folder: folder?.id!,
+      permissions: {},
       lastModified: Date.now(),
     };
 
@@ -73,15 +77,21 @@ app.post("/files", authenticate, upload.array("files"), async (req, res) => {
 
 app.get("/:folder/:file", authenticate, async (req, res) => {
   const filename = req.params["file"];
-  const foldername = req.params["folder"];
+  const folderId = req.params["folder"];
+  const user = req.user!
 
   const file = db.data.files.find(
-    (f: File) => f.folder.name === foldername && f.name === filename
+    (f: File) => f.folder === folderId && f.id === filename
   );
 
   if (!file) {
     res.status(404).json("Not Found");
     return null;
+  }
+
+  if(!canAccess(file, user.id)){
+    res.sendStatus(401).json("You don't have access to this file.")
+    return
   }
 
   res.sendFile(filename, {
