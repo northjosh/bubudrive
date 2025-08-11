@@ -4,6 +4,7 @@ import { v4 } from "uuid";
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { db } from "../server";
+import { NextFunction, Request, Response } from "express";
 
 const jwtSecret = new TextEncoder().encode(process.env.JWT_SECRET);
 
@@ -75,10 +76,35 @@ export const login = async ({
   if (await bcrypt.compare(password, user.password)) {
     return signJwt({ id: user.id });
   } else {
-    return "Invalid Username or Password";
+    throw new Error("Invalid Username or password")
   }
 };
 
 function getUser(username: string) {
   return db.data.users.find((u) => u.username === username);
+}
+
+export async function authenticate(req: Request, res:Response,  next: NextFunction){
+
+  const token = req.headers.authorization?.split(" ")[1]
+  if(!token){  
+    res.sendStatus(401).json({
+      message: "Unauthorized"
+    })
+  }
+  try {
+    const decoded = await verifyJwt(token!)
+    
+    const user = await fetchUserFromToken(token!)
+    if(!user){
+      return 
+    }
+   
+    req.user = user;
+
+    next();
+  }catch(e){
+    res.sendStatus(403)
+  }
+
 }

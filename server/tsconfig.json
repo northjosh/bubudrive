@@ -2,14 +2,16 @@
   "compilerOptions": {
     "target": "es2022",
     "module": "commonjs",
-    "outDir": "dist/server",
-    "rootDir": ".",
+    "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true
   },
   "include": [
-    "."
-  ]
+    ".",
+    "server.ts", 
+    "lib/**/*.ts",   
+    "types/**/*.ts"  
+  ],
+  "exclude": ["node_modules"]
 }

@@ -15,6 +15,20 @@
 
 .main-nav {
   padding: 0.4rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+}
+
+.profile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
 }
 
 .sidenav {
@@ -565,7 +579,6 @@ label {
   display: grid;
   height: 100vh;
   place-items: center;
-  gap: 16px;
 }
 
 .signup-container > form {

@@ -36,14 +36,14 @@ export const router = t.router;
 export const loggerMiddleware = t.middleware(
   async ({ path, type, next, ctx }) => {
     const userId = ctx.user?.id ?? "anonymous";
-    logger.info(`${Date.now()} ${type} ${path} - User: ${userId}`);
+    logger.info(`${new Date().toISOString()} ${type} ${path} - User: ${userId}`);
     return next();
   }
 );
 
 export const procedure = t.procedure.use(loggerMiddleware);
 
-export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
+export const protectedProcedure = procedure.use(async ({ ctx, next }) => {
   if (!ctx.user) {
     throw new TRPCError({ code: "UNAUTHORIZED", message: "Not authenticated" });
   }

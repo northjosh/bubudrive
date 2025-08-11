@@ -1,3 +1,4 @@
+/// <reference path="./types/express.d.ts" />
 import express, { Request, Response } from "express";
 import { appRouter, createContext } from "./trpc";
 import * as trpcExpress from "@trpc/server/adapters/express";
@@ -11,6 +12,8 @@ import cors from "cors";
 import { JSONFile } from "lowdb/node";
 import { Low } from "lowdb";
 import { logger } from "./utils/logger";
+import { authenticate } from "./lib/auth";
+import { getFolderFromRequest } from "./lib/folder";
 
 export const defaultData = {
   folders: [] as Folder[],
@@ -29,6 +32,7 @@ app.use(
     credentials: true,
   })
 );
+
 app.use("/express", express.json());
 app.use(
   "/trpc",
@@ -41,9 +45,11 @@ app.use(
   })
 );
 
-app.post("/files", upload.array("files"), async (req, res) => {
-  const folder = getFolder(req, res);
+app.post("/files", authenticate, upload.array("files"), async (req, res) => {
+  const folder = getFolderFromRequest(req, res);
   const files = req.files as Express.Multer.File[];
+  const user = req.user;
+
   const response = [];
 
   for (const file of files) {
@@ -51,7 +57,7 @@ app.post("/files", upload.array("files"), async (req, res) => {
       name: file.originalname,
       id: v4(),
       size: file.size,
-      owner: "system",
+      owner: user!.id,
       folder: folder!,
       lastModified: Date.now(),
     };
@@ -65,7 +71,7 @@ app.post("/files", upload.array("files"), async (req, res) => {
   res.status(201).json(response);
 });
 
-app.get("/:folder/:file", async (req, res) => {
+app.get("/:folder/:file", authenticate, async (req, res) => {
   const filename = req.params["file"];
   const foldername = req.params["folder"];
 
@@ -84,18 +90,6 @@ app.get("/:folder/:file", async (req, res) => {
   });
 });
 
-function getFolder(req: Request, res: Response) {
-  const folderName = req.query["folder"];
-  if (!folderName || typeof folderName !== "string") {
-    return null;
-  }
-  const folder = db.data.folders.find((f: Folder) => f.name === folderName);
-  if (!folder) {
-    res.status(400).send("Folder not found.");
-    return null;
-  }
-  return folder;
-}
 const startServer = async () => {
   await db.read();
   app.listen(9000, () => {

@@ -1,6 +1,6 @@
 import { useState, useEffect, createContext, useContext } from "react";
 import { trpc } from "../trpc";
-
+import { useNavigate } from "@tanstack/react-router";
 
 interface User {
   id: string;
@@ -28,6 +28,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const  navigate = useNavigate()
 
   const loginMutation = trpc.login.useMutation();
   const signupMutation = trpc.signup.useMutation();
@@ -76,6 +77,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("userData");
+    navigate({to: "/login"})
     setUser(null);
   };
 
