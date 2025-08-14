@@ -3,9 +3,13 @@ import { db } from "../server";
 import { Folder } from "./folder";
 import fs from "fs-extra";
 import { logger } from "../utils/logger";
+import path from "path";
 
 export const accessSchema = ["read", "write"] as const;
 export type Access = (typeof accessSchema)[number];
+
+const folderPath = path.resolve(__dirname, "../../bubu");
+console.log(folderPath);
 
 export interface File {
   type: "file";
@@ -47,7 +51,7 @@ export async function deletefiles(filesIds: string[], userId: string) {
       throw new Error(`You don't have permission to delete ${file.name}`);
     }
 
-    fs.remove(`../../../bubu/${file.name}`, (error) => {
+    fs.remove(`${folderPath}/${file.name}`, (error) => {
       if (error) logger.error(`${new Date().toISOString()}: ${error}`);
       logger.info(`${new Date().toISOString()}: file ${file.name} deleted by ${userId} `);
     });
@@ -72,7 +76,7 @@ export async function deleteFilesFromFolder(folderId: string, userId: string) {
       throw new Error(`You don't have permission to delete ${file.name}`);
     }
 
-    fs.remove(`../../../bubu/${file.name}`, (error) => {
+    fs.remove(`${folderPath}/${file.name}`, (error) => {
       if (error) logger.error(`${new Date().toISOString()}: ${error}`);
 
       logger.info(`${new Date().toISOString()}: file deleted by ${userId} `);
