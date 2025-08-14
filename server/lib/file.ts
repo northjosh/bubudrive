@@ -47,9 +47,9 @@ export async function deletefiles(filesIds: string[], userId: string) {
       throw new Error(`You don't have permission to delete ${file.name}`);
     }
 
-    fs.remove(`../../bubu/${file.name}`, (error) => {
+    fs.remove(`../../../bubu/${file.name}`, (error) => {
       if (error) logger.error(`${new Date().toISOString()}: ${error}`);
-      logger.info(`${new Date().toISOString()}: file deleted by ${userId} `);
+      logger.info(`${new Date().toISOString()}: file ${file.name} deleted by ${userId} `);
     });
 
     db.data.files = db.data.files.filter((f) => f.id !== file.id);
@@ -72,7 +72,7 @@ export async function deleteFilesFromFolder(folderId: string, userId: string) {
       throw new Error(`You don't have permission to delete ${file.name}`);
     }
 
-    fs.remove(`../../bubu/${file.name}`, (error) => {
+    fs.remove(`../../../bubu/${file.name}`, (error) => {
       if (error) logger.error(`${new Date().toISOString()}: ${error}`);
 
       logger.info(`${new Date().toISOString()}: file deleted by ${userId} `);

@@ -3,8 +3,20 @@ import * as trpcExpress from "@trpc/server/adapters/express";
 import { logger } from "./utils/logger";
 import { z } from "zod/v4";
 import { fetchUserFromToken, signup, login } from "./lib/auth";
-import { createFolder, deleteFolder, getAllFolders, getFolder } from "./lib/folder";
-import { getAllFiles, getFilesFromFolder } from "./lib/file";
+import {
+  createFolder,
+  deleteFolder,
+  getAllFolders,
+  getFolder,
+} from "./lib/folder";
+import {
+  getAllFiles,
+  getFilesFromFolder,
+  share,
+  deletefiles,
+} from "./lib/file";
+import { ZSignUpSchema, ZUserSchema } from "./types/auth.type";
+import { db } from "./server";
 
 export const createContext = async ({
   req,
@@ -32,7 +44,9 @@ export const router = t.router;
 export const loggerMiddleware = t.middleware(
   async ({ path, type, next, ctx }) => {
     const userId = ctx.user?.id ?? "anonymous";
-    logger.info(`${new Date().toISOString()} ${type} ${path} - User: ${userId}`);
+    logger.info(
+      `${new Date().toISOString()} ${type} ${path} - User: ${userId}`
+    );
     return next();
   }
 );
@@ -51,19 +65,12 @@ export const protectedProcedure = procedure.use(async ({ ctx, next }) => {
   });
 });
 
-
-
-
 export const appRouter = router({
   hello: procedure.query((opts) => "ola trpC!"),
 
   signup: procedure
-    .input(
-      z.object({
-        username: z.string().min(3),
-        password: z.string().min(6),
-      })
-    )
+    .input(ZSignUpSchema)
+    .output(ZUserSchema)
     .mutation(async ({ input }) => {
       const user = await signup(input);
       if (!user) {
@@ -72,7 +79,7 @@ export const appRouter = router({
           message: "Username already exists",
         });
       }
-      return { success: true, user: { id: user.id, username: user.username } };
+      return { ...user, success: true };
     }),
 
   login: procedure
@@ -96,42 +103,105 @@ export const appRouter = router({
   getAllFolders: protectedProcedure.query(({ ctx }) =>
     getAllFolders(ctx.user!.id)
   ),
-
   getFolder: protectedProcedure
     .input(
       z.object({
-        foldername: z.string(),
+        folderId: z.string(),
       })
     )
     .query(({ input, ctx }) => getFolder(input)),
 
   getAllFiles: protectedProcedure.query(({ ctx }) => getAllFiles(ctx.user.id)),
-
   getFilesFromFolder: protectedProcedure
     .input(
       z.object({
-        foldername: z.string(),
+        folderId: z.string(),
       })
     )
     .query(({ input, ctx }) =>
-      getFilesFromFolder(input.foldername, ctx.user!.id)
+      getFilesFromFolder(input.folderId, ctx.user!.id)
     ),
+  shareFolder: protectedProcedure
+    .input(
+      z.object({
+        folderId: z.string(),
+        targetUserId: z.string(),
+        access: z.enum(["read", "write"]),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { folderId, targetUserId, access } = input;
+      const folder = getFolder({ folderId });
+
+      if (!folder) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Folder not found" });
+      }
+
+      if (folder.owner !== ctx.user!.id) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Only folder owner can share folders",
+        });
+      }
+
+      await share(folder, targetUserId, access);
+
+      return { success: true, message: "Folder shared successfully" };
+    }),
+
+  shareFile: protectedProcedure
+    .input(
+      z.object({
+        fileId: z.string(),
+        targetUserId: z.string(),
+        access: z.enum(["read", "write"]),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { fileId, targetUserId, access } = input;
+      const file = db.data.files.find((f) => f.id === fileId);
+
+      if (!file) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "File not found" });
+      }
+
+      if (file.owner !== ctx.user!.id) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Only file owner can share files",
+        });
+      }
+
+      await share(file, targetUserId, access);
+      return { success: true, message: "File shared successfully" };
+    }),
+
+  deleteFiles: protectedProcedure
+    .input(
+      z.object({
+        fileIds: z.array(z.string()),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      await deletefiles(input.fileIds, ctx.user!.id);
+      return { success: true, message: "Files deleted successfully" };
+    }),
 
   createFolder: protectedProcedure
     .input(
       z.object({
-        foldername: z.string().min(5),
+        folderId: z.string().min(5),
       })
     )
-    .mutation(({ input, ctx }) => createFolder(input.foldername, ctx.user!.id)),
+    .mutation(({ input, ctx }) => createFolder(input.folderId, ctx.user!.id)),
 
   deleteFolder: protectedProcedure
     .input(
       z.object({
-        foldername: z.string().min(5),
+        folderId: z.string().min(5),
       })
     )
-    .mutation(({ input, ctx }) => deleteFolder(input.foldername, ctx.user!.id)),
+    .mutation(({ input, ctx }) => deleteFolder(input.folderId, ctx.user!.id)),
 });
 
 export type AppRouter = typeof appRouter;

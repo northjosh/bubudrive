@@ -48,13 +48,13 @@ export const deleteFolder = (folderId: string, userId: string) => {
   db.write();
 };
 
-export const getFolder = ({ foldername }: { foldername: string }) => {
-  const folder = db.data.folders.find((f: Folder) => f.name == foldername);
+export const getFolder = ({ folderId }: { folderId: string }) => {
+  const folder = db.data.folders.find((f: Folder) => f.id == folderId);
   return folder;
 };
 
 export const getAllFolders = (ownerId: string) => {
-  return db.data.folders.filter((f) => f.owner === ownerId);
+  return db.data.folders.filter((f) => f.owner === ownerId || f.permissions[ownerId]);
 };
 
 export function getFolderFromRequest(req: Request, res: Response) {
