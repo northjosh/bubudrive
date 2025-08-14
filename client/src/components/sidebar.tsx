@@ -1,47 +1,36 @@
 import { Link } from "@tanstack/react-router";
-import { FolderIcon, Plus, Users, Upload } from "lucide-react";
-import { Dialog } from "./dialog";
-import { useSignal } from "@preact/signals";
-import { trpc } from "../trpc";
-import { queryClient } from "../main";
-import type { Folder } from "../../../server/lib/db";
-import { useUploadFile } from "../hooks/useFile";
-import { formatFileSize } from "../utils/fileSize";
+import { FolderIcon, Home, Share2, LogOut } from "lucide-react";
+
+import { trpc } from "@/trpc";
+import type { Folder } from "../../../server/lib/folder";
+
+import { Button } from "./ui/button";
+import { Avatar } from "./ui/avatar";
+import { useAuth } from "../hooks/useAuth";
+import BoringAvatar from "boring-avatars";
+import { CreateFolderDialog } from "./dialogs/create-folder.dialog";
+import { UploadFileDialog } from "./dialogs/upload-file.dialog";
+
 
 export default function Sidebar() {
-  const isDialogOpen = useSignal(false);
-  const isFileDialogOpen = useSignal(false);
-  const openDialog = () => (isDialogOpen.value = true);
-  const closeDialog = () => (isDialogOpen.value = false);
-  const openFileDialog = () => (isFileDialogOpen.value = true);
-  const closeFileDialog = () => (isFileDialogOpen.value = false);
-  const input = useSignal("");
-  const selectedFolder = useSignal("");
-  const selectedFiles = useSignal<File[]>([]);
-
+  const { user, logout } = useAuth();
   const folders = trpc.getAllFolders.useQuery();
-  const fileMutation = useUploadFile();
 
-  const mutation = trpc.createFolder.useMutation({
-    mutationKey: ["create-folder"],
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [["getAllFolders"]] });
-    },
-  });
 
   if (folders.isLoading) {
     return (
-      <div className="sidebar-loading">
-        <div className="loading-spinner"></div>
-        <span>loading folders...</span>
+      <div className="w-64 bg-sidebar border-r border-sidebar-border flex items-center justify-center p-4">
+        <div className="text-sm text-muted-foreground">loading folders...</div>
       </div>
     );
   }
 
   if (folders.error) {
     return (
-      <div className="sidebar-error">
-        <span>error loading folders: {folders.error.message}</span>
+      <div className="w-64 bg-sidebar border-r border-sidebar-border flex items-center justify-center p-4">
+        <div className="text-sm text-destructive">
+          error loading folders: {folders.error.message}
+        </div>
       </div>
     );
   }
@@ -51,190 +40,140 @@ export default function Sidebar() {
   const sharedFolders =
     folders.data?.filter((folder: Folder) => folder.owner === "shared") || [];
 
-  const handleFileUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedFiles.value || !selectedFolder.value) return;
-
-    try {
-      fileMutation.mutate({
-        foldername: selectedFolder.value,
-        files: selectedFiles.value,
-      });
-      closeFileDialog();
-      selectedFiles.value = [];
-      selectedFolder.value = "";
-    } catch (error) {
-      console.error("File upload failed:", error);
-    }
-  };
-
   return (
-    <div className="sidebar">
-      <div className="sidebar-content">
-        <div className="action-buttons">
-          <button className="new-folder-button" onClick={openDialog}>
-            <Plus size={16} />
-            <span>new folder</span>
-          </button>
-          <button className="new-file-button" onClick={openFileDialog}>
-            <Upload size={16} />
-            <span>add file</span>
-          </button>
+    <div className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col h-full">
+      <div className="p-4 border-b border-sidebar-border">
+        <Link
+          to="/"
+          className="flex items-center gap-2 text-sidebar-foreground hover:text-sidebar-primary transition-colors"
+        >
+          <FolderIcon className="h-6 w-6" />
+          <span className="font-semibold text-lg">bubu</span>
+          <span className="text-sm opacity-80">drive</span>
+        </Link>
+      </div>
+
+      {/* Navigation */}
+      <div className="flex-1 flex flex-col p-4 space-y-6">
+        {/* Main Navigation */}
+        <nav className="space-y-1">
+          <Link
+            to="/"
+            className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md transition-colors"
+            activeProps={{
+              className:
+                "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground",
+            }}
+          >
+            <Home className="h-4 w-4" />
+            dashboard
+          </Link>
+        </nav>
+
+        {/* Quick Actions */}
+        <div className="space-y-3">
+          <h3 className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide">
+            quick actions
+          </h3>
+          <div className="space-y-2">
+            <CreateFolderDialog />
+            <UploadFileDialog folders={folders.data || []} />
+          </div>
         </div>
 
-        <div className="sidebar-section">
-          <div className="section-header">
-            <FolderIcon size={16} />
-            <span className="section-title">my folders</span>
-            <span className="folder-count">({myFolders.length})</span>
+        {/* My Folders */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <FolderIcon className="h-4 w-4 text-sidebar-foreground/70" />
+            <h3 className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide">
+              my folders
+            </h3>
+            <span className="text-xs text-sidebar-foreground/50">
+              ({myFolders.length})
+            </span>
           </div>
-          <div className="folder-list">
+          <nav className="space-y-1">
             {myFolders.map((f: Folder) => (
               <Link
                 key={f.id}
                 to="/folders/$folder"
                 params={{ folder: f.name }}
-                className="folder-link"
+                className="flex items-center gap-3 px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md transition-colors"
                 activeProps={{
-                  class: "active-folder-link",
+                  className: "bg-sidebar-accent text-sidebar-accent-foreground",
                 }}
               >
-                <FolderIcon size={16} />
-                <span className="folder-name">{f.name}</span>
+                <FolderIcon className="h-4 w-4" />
+                <span className="truncate">{f.name}</span>
               </Link>
             ))}
             {myFolders.length === 0 && (
-              <div className="empty-state">
-                <span>no folders yet</span>
+              <div className="px-3 py-2 text-xs text-sidebar-foreground/50">
+                no folders yet
               </div>
             )}
-          </div>
+          </nav>
         </div>
 
-        <div className="sidebar-section">
-          <div className="section-header">
-            <Users size={16} />
-            <span className="section-title">shared</span>
-            <span className="folder-count">({sharedFolders.length})</span>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Share2 className="h-4 w-4 text-sidebar-foreground/70" />
+            <h3 className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide">
+              shared with me
+            </h3>
+            <span className="text-xs text-sidebar-foreground/50">
+              ({sharedFolders.length})
+            </span>
           </div>
-          <div className="folder-list">
+          <nav className="space-y-1">
             {sharedFolders.map((f: Folder) => (
               <Link
                 key={f.id}
                 to="/folders/$folder"
-                params={{ folder: f.name }}
-                className="folder-link"
+                params={{ folder: f.id }}
+                className="flex items-center gap-3 px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md transition-colors"
                 activeProps={{
-                  class: "active-folder-link",
+                  className: "bg-sidebar-accent text-sidebar-accent-foreground",
                 }}
               >
-                <FolderIcon size={16} />
-                <span className="folder-name">{f.name}</span>
+                <FolderIcon className="h-4 w-4" />
+                <span className="truncate">{f.name}</span>
               </Link>
             ))}
             {sharedFolders.length === 0 && (
-              <div className="empty-state">
-                <span>no shared folders</span>
+              <div className="px-3 py-2 text-xs text-sidebar-foreground/50">
+                no shared folders
               </div>
             )}
-          </div>
+          </nav>
         </div>
       </div>
-      <Dialog
-        onClose={closeDialog}
-        isOpen={isDialogOpen.value}
-        title="add folder"
-      >
-        <div>
-          <form
-            onSubmit={(e: React.FormEvent) => {
-              e.preventDefault();
-              mutation.mutate({ foldername: input.value });
-              closeDialog();
-              input.value = "";
-            }}
-            className="folder-dialog"
-          >
-            <label htmlFor="name">folder name</label>
-            <input
-              type="text"
-              id="name"
-              value={input.value}
-              onChange={(e) => (input.value = e.currentTarget.value)}
-              className="text-input"
-              placeholder="enter folder name..."
-              required
+
+      <div className="p-4 border-t border-sidebar-border">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-8 w-8">
+            <BoringAvatar
+              variant="pixel"
+              name={user!.username}
+              colors={["red", "white"]}
             />
-            <button type="submit" className="submit-button">
-              add folder
-            </button>
-          </form>
-        </div>
-      </Dialog>
-      <Dialog
-        onClose={closeFileDialog}
-        isOpen={isFileDialogOpen.value}
-        title="add files"
-      >
-        <div>
-          <form onSubmit={handleFileUpload} className="file-dialog">
-            <div className="form-group">
-              <label htmlFor="folder-select">select folder</label>
-              <select
-                id="folder-select"
-                value={selectedFolder.value}
-                onChange={(e) => (selectedFolder.value = e.currentTarget.value)}
-                className="select-input"
-                required
-              >
-                <option value="">choose a folder...</option>
-                {myFolders.map((f: Folder) => (
-                  <option key={f.id} value={f.name}>
-                    {f.name}
-                  </option>
-                ))}
-                {sharedFolders.map((f: Folder) => (
-                  <option key={f.id} value={f.name}>
-                    {f.name} (shared)
-                  </option>
-                ))}
-              </select>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium text-sidebar-foreground truncate">
+              {user?.username}
             </div>
-
-            <div className="form-group">
-              <label htmlFor="file-input">select file</label>
-              <input
-                type="file"
-                id="file-input"
-                onChange={(e) => {
-                  const file = e.currentTarget.files?.[0];
-                  selectedFiles.value = file ? [file] : [];
-                }}
-                className="file-input"
-                required
-              />
-              {selectedFiles.value.length > 0 && (
-                <div className="file-info">
-                  <span className="file-name">
-                    {selectedFiles.value[0].name}
-                  </span>
-                  <span className="file-size">
-                    ({formatFileSize(selectedFiles.value[0].size)})
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              className="submit-button"
-              disabled={fileMutation.isPending}
-            >
-              {fileMutation.isPending ? "uploading..." : "upload file"}
-            </button>
-          </form>
+          </div>
+          <Button
+            onClick={logout}
+            variant="ghost"
+            mode="icon"
+            size="sm"
+            className="text-sidebar-foreground/70 hover:text-sidebar-foreground"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
         </div>
-      </Dialog>
+      </div>
     </div>
   );
 }

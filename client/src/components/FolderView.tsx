@@ -1,5 +1,15 @@
-import type { File } from "../../../server/lib/db";
+import { Download, MoreVertical, Share, Trash } from "lucide-react";
+import type { File } from "../../../server/lib/file";
 import { formatFileSize } from "../utils/fileSize";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { useContextMenu } from "@/hooks/ui/use-context-menu";
+import { DeleteFileDialog } from "./dialogs/delete-file.dialog";
+import { useState } from "react";
 
 export function FolderView({
   folder,
@@ -8,6 +18,33 @@ export function FolderView({
   folder: string;
   files: File[];
 }) {
+  const { contextMenu, showContextMenu, hideContextMenu, menuRef } =
+    useContextMenu();
+
+  const [deleteFile, setDeleteFile] = useState<File | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  const handleDownload = (file: File) => {
+    window.open(`http://localhost:9000/${folder}/${file.name}`, "_blank");
+    hideContextMenu();
+  };
+
+  const handleDelete = (file: File) => {
+    setDeleteFile(file);
+    setIsDeleteDialogOpen(true);
+    hideContextMenu();
+  };
+
+  const handleShare = (file: File) => {
+    // Add your share logic here
+    console.log("Share file:", file);
+    hideContextMenu();
+  };
+
+  const handleDeleteSuccess = () => {
+    // Refresh the file list or trigger a refetch
+    window.location.reload(); // Simple refresh for now
+  };
   return (
     <div>
       <div class="file-container">
@@ -30,7 +67,10 @@ export function FolderView({
             {files.length > 0 ? (
               files.map((file: File) => {
                 return (
-                  <tr>
+                  <tr
+                    onContextMenu={(e) => showContextMenu(e, file)}
+                    style={{ userSelect: "none" }}
+                  >
                     <td class="file-name-cell">
                       <svg
                         class="file-icon"
@@ -58,20 +98,25 @@ export function FolderView({
                     <td>{file.lastModified}</td>
                     <td>{formatFileSize(file.size)}</td>
                     <td class="actions-cell">
-                      <svg
-                        class="actions-icon"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="2"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
-                        />
-                      </svg>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger>
+                          <MoreVertical className="w-4 h-4" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem>
+                            <Download className="w-4 h-4" />
+                            Download
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Trash className="w-4 h-4" />
+                            Delete
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Share className="w-4 h-4" />
+                            Share
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 );
@@ -86,6 +131,50 @@ export function FolderView({
           </tbody>
         </table>
       </div>
+
+      {contextMenu.isVisible && (
+        <div
+          ref={menuRef}
+          className="fixed bg-white border border-gray-200 rounded-md shadow-lg py-1 z-50"
+          style={{
+            left: contextMenu.position.x,
+            top: contextMenu.position.y,
+          }}
+        >
+          <button
+            className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2"
+            onClick={() => handleDownload(contextMenu.data as File)}
+          >
+            <Download className="w-4 h-4" />
+            Download
+          </button>
+          <button
+            className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2"
+            onClick={() => handleShare(contextMenu.data as File)}
+          >
+            <Share className="w-4 h-4" />
+            Share
+          </button>
+          <button
+            className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-red-600"
+            onClick={() => handleDelete(contextMenu.data as File)}
+          >
+            <Trash className="w-4 h-4" />
+            Delete
+          </button>
+        </div>
+      )}
+
+      {/* Delete File Dialog */}
+      <DeleteFileDialog
+        file={deleteFile}
+        isOpen={isDeleteDialogOpen}
+        onClose={() => {
+          setIsDeleteDialogOpen(false);
+          setDeleteFile(null);
+        }}
+        onSuccess={handleDeleteSuccess}
+      />
     </div>
   );
 }

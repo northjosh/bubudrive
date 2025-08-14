@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "../hooks/useAuth";
 import { useSignal } from "@preact/signals";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/login")({
   component: RouteComponent,
@@ -38,14 +40,14 @@ function RouteComponent() {
     <div class="signup-container">
       <form onSubmit={handleSubmit}>
         <h2 className="">welcome back!</h2>
-        <input
+        <Input
           type="text"
           required 
           placeholder="Username"
           value={username}
           onChange={(e) => (username.value = e.currentTarget.value)}
         />
-        <input
+        <Input
           type="password"
           required
           className=""
@@ -57,13 +59,13 @@ function RouteComponent() {
         {error && (
           <div>{error}</div>
         )}
-          <button
+          <Button
             type="submit"
             disabled={isLoading}
             className=""
           >
             log in
-          </button>
+          </Button>
         <span style={{ display: "flex", gap: 6 }}>
           Don't have an account? <Link to="/signup">Sign up</Link>
         </span>

@@ -1,6 +1,5 @@
 import { render } from "preact";
 import "./index.css";
-import "./app.css";
 import { RouterProvider } from "@tanstack/react-router";
 import { router } from "./router.tsx";
 import { ErrorBoundary } from "./components/ErrorBoundary.tsx";

@@ -532,21 +532,6 @@
   padding: 4px;
 }
 
-input {
-  width: 100%;
-  border: none;
-  border-bottom: 2px solid #d1d5db;
-  padding: 10px 0 8px;
-  background-color: transparent;
-  font-size: 1rem;
-  color: #111827;
-  outline: none;
-  transition: border-color 0.3s;
-}
-
-input:focus {
-  border-bottom-color: #dc2626;
-}
 
 label {
   top: 10px;
@@ -563,18 +548,6 @@ label {
   gap: 1rem;
 }
 
-.text-input {
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-}
-
-.text-input:focus {
-  border-color: #dc2626;
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
-}
 .signup-container {
   display: grid;
   height: 100vh;
@@ -588,10 +561,7 @@ label {
   gap: 1rem;
   padding: 0.2rem;
 }
-.signup-container > form > input {
-  color: white;
-  font-size: medium;
-}
+
 
 .submit-button {
   padding: 0.75rem 1.5rem;

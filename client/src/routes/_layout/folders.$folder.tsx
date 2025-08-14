@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { trpc } from "../../trpc";
 import { FolderView } from "../../components/FolderView";
+import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_layout/folders/$folder")({
   component: RouteComponent,
@@ -8,10 +9,14 @@ export const Route = createFileRoute("/_layout/folders/$folder")({
 
 function RouteComponent() {
   const { folder } = Route.useParams();
-  const files = trpc.getFilesFromFolder.useQuery({ foldername: folder });
+  const files = trpc.getFilesFromFolder.useQuery({ folderId: folder });
 
   if (files.isLoading) {
-    return <div>Loading......</div>;
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="animate-spin" />
+      </div>
+    );
   }
 
   if(files.error){
