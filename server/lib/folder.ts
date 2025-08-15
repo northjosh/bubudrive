@@ -1,19 +1,12 @@
 import { TRPCError } from "@trpc/server";
 import { v4 } from "uuid";
-import { db } from "../server";
-import { Access, canDelete, deleteFilesFromFolder, File } from "./file";
+import { db } from "../lib/db";
+import { canDelete, deleteFilesFromFolder } from "./file";
 import { Request, Response } from "express";
 
-export interface Folder {
-  type: "folder";
-  id: string;
-  name: string;
-  owner: string;
-  path: string;
-  permissions: {
-    [userId: string]: Access;
-  };
-}
+// Re-export shared types
+export type { Folder, Access } from "../../shared/types";
+import type { Folder, Access, File } from "../../shared/types";
 
 export const createFolder = async (name: string, ownerId: string) => {
   const folder: Folder = {
@@ -54,7 +47,9 @@ export const getFolder = ({ folderId }: { folderId: string }) => {
 };
 
 export const getAllFolders = (ownerId: string) => {
-  return db.data.folders.filter((f) => f.owner === ownerId || f.permissions[ownerId]);
+  return db.data.folders.filter(
+    (f) => f.owner === ownerId || f.permissions[ownerId]
+  );
 };
 
 export function getFolderFromRequest(req: Request, res: Response) {

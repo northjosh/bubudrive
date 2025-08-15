@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import type { File } from "../../../../server/lib/file";
-import type { Folder } from "../../../../server/lib/folder";
+import type { File, Folder } from "../../../../shared/types";
 
 export interface ContextMenuPosition {
   x: number;
@@ -21,16 +20,19 @@ export const useContextMenu = () => {
 
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const showContextMenu = useCallback((event: React.MouseEvent<HTMLElement>, data?: File | Folder ) => {
-    event.preventDefault();
-    event.stopPropagation();
+  const showContextMenu = useCallback(
+    (event: React.MouseEvent<HTMLElement>, data?: File | Folder) => {
+      event.preventDefault();
+      event.stopPropagation();
 
-    setContextMenu({
-      isVisible: true,
-      position: { x: event.clientX, y: event.clientY },
-      data,
-    });
-  }, []);
+      setContextMenu({
+        isVisible: true,
+        position: { x: event.clientX, y: event.clientY },
+        data,
+      });
+    },
+    []
+  );
 
   const hideContextMenu = useCallback(() => {
     setContextMenu((prev) => ({ ...prev, isVisible: false }));

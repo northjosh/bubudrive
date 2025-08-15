@@ -1,16 +1,21 @@
-import { Outlet, createRootRoute } from "@tanstack/react-router";
-import { AuthProvider } from "../hooks/useAuth";
+import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
+
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { Toaster } from "@/components/ui/sonner";
+import type { AuthContextType } from "@/hooks/useAuth";
 
-export const Route = createRootRoute({
+
+interface RouteContext {
+  auth: AuthContextType
+}
+export const Route = createRootRouteWithContext<RouteContext>()({
   component: RootComponent,
 });
 
 function RootComponent() {
   return (
-    <AuthProvider>
+
        <>
        <Toaster />
       <Outlet />
@@ -21,6 +26,6 @@ function RootComponent() {
       />
       <TanStackRouterDevtools position="bottom-right" />
     </>
-    </AuthProvider>
+
   );
 }

@@ -1,14 +1,14 @@
 import { useState, useEffect, createContext, useContext } from "react";
 import { trpc } from "../trpc";
-import { useNavigate } from "@tanstack/react-router";
-
 interface User {
   id: string;
   username: string;
 }
 
-interface AuthContextType {
+
+export interface AuthContextType {
   user: User | null;
+  isAuthenticated: boolean
   login: (username: string, password: string) => Promise<boolean>;
   signup: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
@@ -28,32 +28,45 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const  navigate = useNavigate()
 
   const loginMutation = trpc.login.useMutation();
   const signupMutation = trpc.signup.useMutation();
+  const logoutMutation = trpc.logout.useMutation();
+  
+
+  const {data, error, isLoading:loading, refetch} = trpc.me.useQuery(undefined, {
+    staleTime: 10 * 60 * 60,
+    retry: (failureCount, error: any) => {
+      if (error?.data?.code === 'UNAUTHORIZED') {
+        return false;
+      }
+      return failureCount < 3;
+    },
+    refetchOnWindowFocus: false,
+  });
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      const userData = localStorage.getItem("userData");
-      if (userData) {
-        setUser(JSON.parse(userData));
-      }
+    if (data) {
+      setUser(data);
+      setIsLoading(false);
+    } else if (error) {
+      setUser(null);
+      setIsLoading(false);
+    } else if (loading) {
+      setIsLoading(true);
     }
-    setIsLoading(false);
-  }, []);
+  }, [data, error, loading]);
+
+
 
   const login = async (
     username: string,
     password: string
   ): Promise<boolean> => {
     try {
-      const result = await loginMutation.mutateAsync({ username, password });
-      localStorage.setItem("authToken", result.token);
-      const userInfo = { id: "temp", username };
-      localStorage.setItem("userData", JSON.stringify(userInfo));
-      setUser(userInfo);
+      await loginMutation.mutateAsync({ username, password });
+      const { data } = await refetch();
+      setUser(data ?? null);
       return true;
     } catch (error) {
       console.error("Login failed:", error);
@@ -66,7 +79,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     password: string
   ): Promise<boolean> => {
     try {
-      const result = await signupMutation.mutateAsync({ username, password });
+      await signupMutation.mutateAsync({ username, password });
       return await login(username, password);
     } catch (error) {
       console.error("Signup failed:", error);
@@ -74,15 +87,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("userData");
-    navigate({to: "/login"})
-    setUser(null);
+  const logout = async () => {
+    try {
+      await logoutMutation.mutateAsync();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setUser(null);
+      trpc.useUtils().me.invalidate();
+    }
   };
 
+
+  const isAuthenticated  = !!user
+ 
+
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, signup, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

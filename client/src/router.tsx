@@ -4,6 +4,9 @@ import { routeTree } from "./routeTree.gen";
 
 export const router = createRouter({
   routeTree,
+  context :{
+    auth: undefined!,
+  },
   defaultPreload: "intent",
   defaultPreloadStaleTime: 0,
   defaultErrorComponent: Error,

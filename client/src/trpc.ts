@@ -11,12 +11,7 @@ const url = "http://localhost:9000/trpc";
 
 export const trpc = createTRPCReact<AppRouter>();
 
-const getAuthToken = () => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem("authToken");
-  }
-  return null;
-};
+
 
 export const trpcClient = trpc.createClient({
   links: [
@@ -24,16 +19,20 @@ export const trpcClient = trpc.createClient({
       condition: (op) => isNonJsonSerializable(op.input),
       true: httpLink({
         url,
-        headers: () => {
-          const token = getAuthToken();
-          return token ? { Authorization: `Bearer ${token}` } : {};
+        fetch: (url, options) => {
+          return fetch(url, {
+            ...options,
+            credentials: 'include', // Include cookies
+          });
         },
       }),
       false: httpBatchLink({
         url,
-        headers: () => {
-          const token = getAuthToken();
-          return token ? { Authorization: `Bearer ${token}` } : {};
+        fetch: (url, options) => {
+          return fetch(url, {
+            ...options,
+            credentials: 'include', // Include cookies
+          });
         },
       }),
     }),

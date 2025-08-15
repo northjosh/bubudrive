@@ -1,5 +1,5 @@
 import { Download, MoreVertical, Share, Trash } from "lucide-react";
-import type { File } from "../../../server/lib/file";
+import type { File } from "../../../shared/types";
 import { formatFileSize } from "../utils/fileSize";
 import {
   DropdownMenu,
@@ -10,6 +10,7 @@ import {
 import { useContextMenu } from "@/hooks/ui/use-context-menu";
 import { DeleteFileDialog } from "./dialogs/delete-file.dialog";
 import { useState } from "react";
+import { queryClient } from "@/main";
 
 export function FolderView({
   folder,
@@ -36,14 +37,12 @@ export function FolderView({
   };
 
   const handleShare = (file: File) => {
-    // Add your share logic here
     console.log("Share file:", file);
     hideContextMenu();
   };
 
   const handleDeleteSuccess = () => {
-    // Refresh the file list or trigger a refetch
-    window.location.reload(); // Simple refresh for now
+    queryClient.invalidateQueries({queryKey: ["getAllFiles", "getFilesFromFolder"]})
   };
   return (
     <div>

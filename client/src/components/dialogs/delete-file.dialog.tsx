@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { trpc } from "@/trpc";
-import type { File } from "../../../../server/lib/file";
+import type { File } from "../../../../shared/types";
 import { toast } from "sonner";
 
 interface DeleteFileDialogProps {

@@ -38,11 +38,9 @@ export function CreateFolderDialog() {
         className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm"
         onClick={() => setOpen(false)}
       />
-
-      {/* Modal */}
       <div className="fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] w-full max-w-lg">
         <div className="bg-background border border-border rounded-lg shadow-lg p-6">
-          {/* Header */}
+
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Add Folder</h2>
             <Button
@@ -56,7 +54,6 @@ export function CreateFolderDialog() {
             </Button>
           </div>
 
-          {/* Form */}
           <form
             onSubmit={(e) => {
               e.preventDefault();

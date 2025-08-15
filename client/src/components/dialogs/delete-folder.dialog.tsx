@@ -7,9 +7,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
-import { trpc } from "../../trpc";
-import type { Folder as FolderType } from "../../../../server/lib/folder";
+} from "@/components/ui/dialog";
+import { trpc } from "@/trpc";
+import type { Folder as FolderType } from "../../../../shared/types";
+import { toast } from "sonner";
 
 interface DeleteFolderDialogProps {
   folder: FolderType | null;
@@ -31,11 +32,9 @@ export function DeleteFolderDialog({
     },
     onError: (error) => {
       console.error("Failed to delete folder:", error);
-      // You can add toast notification here
+      toast.error("Failed to delete");
     },
   });
-
-  // Get files in this folder to show what will be deleted
   const { data: folderFiles } = trpc.getFilesFromFolder.useQuery(
     { folderId: folder?.id || "" },
     { enabled: !!folder?.id && isOpen }

@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { FolderIcon, Home, Share2, LogOut } from "lucide-react";
 
 import { trpc } from "@/trpc";
-import type { Folder } from "../../../server/lib/folder";
+import type { Folder } from "../../../shared/types";
 
 import { Button } from "./ui/button";
 import { Avatar } from "./ui/avatar";
@@ -11,11 +11,9 @@ import BoringAvatar from "boring-avatars";
 import { CreateFolderDialog } from "./dialogs/create-folder.dialog";
 import { UploadFileDialog } from "./dialogs/upload-file.dialog";
 
-
 export default function Sidebar() {
   const { user, logout } = useAuth();
   const folders = trpc.getAllFolders.useQuery();
-
 
   if (folders.isLoading) {
     return (
@@ -67,6 +65,17 @@ export default function Sidebar() {
           >
             <Home className="h-4 w-4" />
             dashboard
+          </Link>
+          <Link
+            to="/folders"
+            className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md transition-colors"
+            activeProps={{
+              className:
+                "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground",
+            }}
+          >
+            <FolderIcon className="h-4 w-4" />
+            all folders
           </Link>
         </nav>
 

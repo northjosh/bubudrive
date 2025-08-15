@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { Upload, X } from "lucide-react";
 import { useState } from "preact/hooks";
 import { useUploadFile } from "@/hooks/useFile";
-import type { Folder } from "../../../../server/lib/folder";
+import type { Folder } from "../../../../shared/types";
 
 interface UploadFileDialogProps {
   folders: Folder[];
@@ -130,8 +130,7 @@ export function UploadFileDialog({ folders }: UploadFileDialogProps) {
                 className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground file:mr-2 file:py-1 file:px-2 file:border-0 file:text-sm file:font-medium file:bg-muted file:text-muted-foreground hover:file:bg-muted/80"
                 required
               />
-
-        h
+              h
               {selectedFiles.value.length > 0 && (
                 <div className="space-y-2 max-h-32 overflow-y-auto">
                   {selectedFiles.value.map((file, index) => (

@@ -13,6 +13,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteRouteImport } from './routes/_layout/route'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
+import { Route as LayoutFoldersIndexRouteImport } from './routes/_layout/folders.index'
 import { Route as LayoutFoldersFolderRouteImport } from './routes/_layout/folders.$folder'
 
 const SignupRoute = SignupRouteImport.update({
@@ -34,6 +35,11 @@ const LayoutIndexRoute = LayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LayoutRouteRoute,
 } as any)
+const LayoutFoldersIndexRoute = LayoutFoldersIndexRouteImport.update({
+  id: '/folders/',
+  path: '/folders/',
+  getParentRoute: () => LayoutRouteRoute,
+} as any)
 const LayoutFoldersFolderRoute = LayoutFoldersFolderRouteImport.update({
   id: '/folders/$folder',
   path: '/folders/$folder',
@@ -45,12 +51,14 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/': typeof LayoutIndexRoute
   '/folders/$folder': typeof LayoutFoldersFolderRoute
+  '/folders': typeof LayoutFoldersIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/': typeof LayoutIndexRoute
   '/folders/$folder': typeof LayoutFoldersFolderRoute
+  '/folders': typeof LayoutFoldersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -59,12 +67,13 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_layout/': typeof LayoutIndexRoute
   '/_layout/folders/$folder': typeof LayoutFoldersFolderRoute
+  '/_layout/folders/': typeof LayoutFoldersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/login' | '/signup' | '/' | '/folders/$folder'
+  fullPaths: '/login' | '/signup' | '/' | '/folders/$folder' | '/folders'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/signup' | '/' | '/folders/$folder'
+  to: '/login' | '/signup' | '/' | '/folders/$folder' | '/folders'
   id:
     | '__root__'
     | '/_layout'
@@ -72,6 +81,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_layout/'
     | '/_layout/folders/$folder'
+    | '/_layout/folders/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -110,6 +120,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRouteRoute
     }
+    '/_layout/folders/': {
+      id: '/_layout/folders/'
+      path: '/folders'
+      fullPath: '/folders'
+      preLoaderRoute: typeof LayoutFoldersIndexRouteImport
+      parentRoute: typeof LayoutRouteRoute
+    }
     '/_layout/folders/$folder': {
       id: '/_layout/folders/$folder'
       path: '/folders/$folder'
@@ -123,11 +140,13 @@ declare module '@tanstack/react-router' {
 interface LayoutRouteRouteChildren {
   LayoutIndexRoute: typeof LayoutIndexRoute
   LayoutFoldersFolderRoute: typeof LayoutFoldersFolderRoute
+  LayoutFoldersIndexRoute: typeof LayoutFoldersIndexRoute
 }
 
 const LayoutRouteRouteChildren: LayoutRouteRouteChildren = {
   LayoutIndexRoute: LayoutIndexRoute,
   LayoutFoldersFolderRoute: LayoutFoldersFolderRoute,
+  LayoutFoldersIndexRoute: LayoutFoldersIndexRoute,
 }
 
 const LayoutRouteRouteWithChildren = LayoutRouteRoute._addFileChildren(

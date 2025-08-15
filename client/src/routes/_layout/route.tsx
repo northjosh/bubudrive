@@ -1,18 +1,16 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import Sidebar from "@/components/sidebar";
 import { useAuth } from "../../hooks/useAuth";
-
-import { isTokenExpired } from "../../utils/tokenUtils";
 import Navbar from "@/components/Navbar";
 
 export const Route = createFileRoute("/_layout")({
-  beforeLoad: () => {
-    const authToken = localStorage.getItem("authToken");
-    if (!authToken) {
-      throw redirect({ to: "/login" });
+  beforeLoad: ({context}) => {
+    // Don't redirect if we're still loading the auth state
+    if (context.auth.isLoading) {
+      return;
     }
-
-    if (isTokenExpired(authToken)) {
+    
+    if (!context.auth.isAuthenticated) {
       throw redirect({ to: "/login" });
     }
   },
@@ -22,8 +20,16 @@ export const Route = createFileRoute("/_layout")({
 function RouteComponent() {
   const { user, isLoading } = useAuth();
 
+  // Show loading state while checking authentication
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!user) {
